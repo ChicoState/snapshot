@@ -2,10 +2,13 @@ import pyautogui
 import tkinter as tk
 import ocr
 import os
+import json
 from PIL import Image, ImageTk
 from pathlib import Path
 import pytesseract
 from io import BytesIO
+import pyperclip
+from PyQt5.QtCore import QSettings
 
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Correct path
@@ -98,6 +101,15 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
                     file.write(extracted_text)
 
                 print(f"Extracted text saved to {save_path}")
+
+                # Check settings
+                settings = QSettings("Software Engineering Class", "Snapshot")
+                text_destination_json = settings.value("Text Destination: ", "[]") 
+                text_destination = json.loads(text_destination_json)
+
+                if "Save Text to Clipboard" in text_destination:
+                    pyperclip.copy(extracted_text)  # Copy text to clipboard
+                    print("Extracted text copied to clipboard.")
 
                 # Open the text file automatically
                 if os.name == "nt":  # Windows
