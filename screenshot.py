@@ -2,7 +2,10 @@ import pyautogui
 import tkinter as tk
 import ocr
 import os
+import json
 from PIL import Image, ImageTk
+import pyperclip
+from windows_toasts import Toast, WindowsToaster, ToastButton
 
 class SnippingTool:
     def __init__(self):
@@ -65,19 +68,55 @@ class SnippingTool:
         try:
             extracted_text = ocr.extract_text(image_path)  # Call OCR function
 
+            # Load configuration
+            config = self.load_config()
             text_file = "extracted_text.txt"
             with open(text_file, "w", encoding="utf-8") as file:
                 file.write(extracted_text)
 
             print(f"Extracted text saved to {text_file}")
+            if config.get("output_mode", "open_editor") == "open_editor":
+                # Open text file automatically
+                if os.name == "nt":  # Windows
+                    os.startfile(text_file)
+                elif os.name == "posix":  # macOS/Linux
+                    os.system(f"xdg-open {text_file}")  # Linux
+                    os.system(f"open {text_file}")  # macOS
+            else:  # clipboard
+                pyperclip.copy(extracted_text)
+                self.show_clipboard_notification()
 
-            # Open text file automatically
-            if os.name == "nt":  # Windows
-                os.startfile(text_file)
-            elif os.name == "posix":  # macOS/Linux
-                os.system(f"xdg-open {text_file}")  # Linux
-                os.system(f"open {text_file}")  # macOS
         except Exception as e:
             print(f"Error processing OCR: {e}")
 
-SnippingTool()  # Run snipping tool
+    def load_config(self):
+        """Loads configuration from config.json, or creates a default config."""
+        try:
+            with open("config.json", "r") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            default_config = {"output_mode": "open_editor"}  # Default to open editor
+            with open("config.json", "w") as f:
+                json.dump(default_config, f)
+            return default_config
+
+    def show_clipboard_notification(self):
+        """Shows a toast notification with an option to open the text editor."""
+        def open_editor_from_notification():
+            text_file = "extracted_text.txt"
+            if os.name == "nt":  # Windows
+                    os.startfile(text_file)
+            elif os.name == "posix":  # macOS/Linux
+                os.system(f"xdg-open {text_file}")  # Linux
+                os.system(f"open {text_file}")  # macOS
+
+        toaster = WindowsToaster("Snapshot")
+
+        toast = Toast(
+            text_fields = ["Text Copied to Clipboard",
+            "Text has been copied to the clipboard."],
+            on_activated = open_editor_from_notification()
+        )
+
+        toaster.show_toast(toast)
+SnippingTool()
