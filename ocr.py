@@ -13,3 +13,4 @@ def extract_text(image_path):
         return pytesseract.image_to_string(Image.open(image_path))
     except Exception as e:
         return f"Error extracting text: {e}"
+        
