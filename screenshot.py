@@ -5,7 +5,7 @@ import os
 import json
 from PIL import Image, ImageTk
 import pyperclip
-from windows_toasts import Toast, WindowsToaster, ToastButton
+from win11toast import toast
 
 class SnippingTool:
     def __init__(self):
@@ -110,13 +110,5 @@ class SnippingTool:
                 os.system(f"xdg-open {text_file}")  # Linux
                 os.system(f"open {text_file}")  # macOS
 
-        toaster = WindowsToaster("Snapshot")
-
-        toast = Toast(
-            text_fields = ["Text Copied to Clipboard",
-            "Text has been copied to the clipboard."],
-            on_activated = open_editor_from_notification()
-        )
-
-        toaster.show_toast(toast)
+        toast('Text copied to clipboard', 'Click to open text file', on_click=lambda args: open_editor_from_notification())
 SnippingTool()
