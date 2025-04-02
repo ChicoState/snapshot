@@ -59,7 +59,8 @@ class SnippingTool:
 
         # **Now calling OCR processing**
         self.process_ocr(image_path)
-        self.same_file_ocr(image_path)
+        self.cumulative_ocr(image_path)
+        #self.clear_cumulative() #call only when you want to clear text file
 
     def process_ocr(self, image_path):
         """Extracts text from the image, saves to a text file, and opens it."""
@@ -81,7 +82,7 @@ class SnippingTool:
         except Exception as e:
             print(f"Error processing OCR: {e}")
 
-    def same_file_ocr(self, image_path): 
+    def cumulative_ocr(self, image_path): 
         """Extracts text from the image, saves to a text file, and opens it.""" #this version keeps saving text to the same file
         try:
             extracted_text = ocr.extract_text(image_path)  # Call OCR function
@@ -101,4 +102,9 @@ class SnippingTool:
         except Exception as e:
             print(f"Error processing OCR: {e}")
 
+    #clears content from cumulative ocr process
+    def clear_cumulative(self):
+        open("long_text.txt", "w").close()
+
 SnippingTool()  # Run snipping tool
+
