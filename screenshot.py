@@ -18,6 +18,7 @@ class SnippingTool:
         self.tk_image = ImageTk.PhotoImage(self.screenshot)
         self.canvas.create_image(0, 0, anchor="nw", image=self.tk_image)
         self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.extracted_text = ""
 
         # Selection variables
         self.start_x = None
@@ -66,16 +67,16 @@ class SnippingTool:
     def process_ocr(self, image_path):
         """Extracts text from the image, saves to a text file, and opens it."""
         try:
-            extracted_text = ocr.extract_text(image_path)  # Call OCR function
+            self.extracted_text = ocr.extract_text(image_path)  # Call OCR function
 
             # Load configuration
             config = self.load_config()
             text_file = "extracted_text.txt"
             with open(text_file, "w", encoding="utf-8") as file:
-                file.write(extracted_text)
+                file.write(self.extracted_text)
 
             print(f"Extracted text saved to {text_file}")
-            if config.get("output_mode", "open_editor") == "open_editor":
+            if config.get("output_mode", "to_clipboard") != "to_clipboard":
                 # Open text file automatically
                 if os.name == "nt":  # Windows
                     os.startfile(text_file)
@@ -83,32 +84,45 @@ class SnippingTool:
                     os.system(f"xdg-open {text_file}")  # Linux
                     os.system(f"open {text_file}")  # macOS
             else:  # clipboard
-                pyperclip.copy(extracted_text)
-                self.show_clipboard_notification()
+                pyperclip.copy(self.extracted_text)
+                if os.name == "nt":  # Windows
+                    self.show_clipboard_notification_windows()
+                elif os.name == "posix":  # macOS/Linux
+                    print("Text copied to clipboard. No notification available for macOS/Linux.")
 
         except Exception as e:
             print(f"Error processing OCR: {e}")
 
+    # replace with whatever config function we end up with
     def load_config(self):
         """Loads configuration from config.json, or creates a default config."""
         try:
             with open("config.json", "r") as f:
                 return json.load(f)
         except FileNotFoundError:
-            default_config = {"output_mode": "open_editor"}  # Default to open editor
+            default_config = {"output_mode": "to_clipboard"}  # Default to clipboard
             with open("config.json", "w") as f:
                 json.dump(default_config, f)
             return default_config
 
-    def show_clipboard_notification(self):
+    def show_clipboard_notification_windows(self):
         """Shows a toast notification with an option to open the text editor."""
-        def open_editor_from_notification():
-            text_file = "extracted_text.txt"
-            if os.name == "nt":  # Windows
-                    os.startfile(text_file)
-            elif os.name == "posix":  # macOS/Linux
-                os.system(f"xdg-open {text_file}")  # Linux
-                os.system(f"open {text_file}")  # macOS
+        def handle_click(event):
+            action = event.get('arguments', 'http:')[5:] #ignore 'http:' prefix; workaround for win11toast
 
-        toast('Text copied to clipboard', 'Click to open text file', on_click=lambda args: open_editor_from_notification())
+            if action == '1':
+                text_file = "extracted_text.txt"
+                os.startfile(text_file)
+            elif action == '2':
+                image_file = "screenshot.png"
+                os.startfile(image_file)
+
+
+        buttons = [
+            {'activationType': 'protocol', 'arguments': 'http:1', 'content': 'Open Text Editor'},
+            {'activationType': 'protocol', 'arguments': 'http:2', 'content': 'View Image'}
+        ]
+
+        toast('Text copied to clipboard', self.extracted_text, on_click=handle_click, buttons=buttons)
+
 SnippingTool()
