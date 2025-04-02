@@ -59,6 +59,7 @@ class SnippingTool:
 
         # **Now calling OCR processing**
         self.process_ocr(image_path)
+        self.same_file_ocr(image_path)
 
     def process_ocr(self, image_path):
         """Extracts text from the image, saves to a text file, and opens it."""
@@ -68,6 +69,26 @@ class SnippingTool:
             text_file = "extracted_text.txt"
             with open(text_file, "w", encoding="utf-8") as file:
                 file.write(extracted_text)
+
+            print(f"Extracted text saved to {text_file}")
+
+            # Open text file automatically
+            if os.name == "nt":  # Windows
+                os.startfile(text_file)
+            elif os.name == "posix":  # macOS/Linux
+                os.system(f"xdg-open {text_file}")  # Linux
+                os.system(f"open {text_file}")  # macOS
+        except Exception as e:
+            print(f"Error processing OCR: {e}")
+
+    def same_file_ocr(self, image_path): 
+        """Extracts text from the image, saves to a text file, and opens it.""" #this version keeps saving text to the same file
+        try:
+            extracted_text = ocr.extract_text(image_path)  # Call OCR function
+
+            text_file = "long_text.txt"
+            with open(text_file, "a", encoding="utf-8") as file:
+                file.write(extracted_text + "\n")
 
             print(f"Extracted text saved to {text_file}")
 
