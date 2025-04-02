@@ -31,6 +31,7 @@ class SnippingTool:
         self.tk_image = ImageTk.PhotoImage(self.screenshot)
         self.canvas.create_image(0, 0, anchor="nw", image=self.tk_image)
         self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.extracted_text = ""
 
         # Selection variables
         self.start_x = None
