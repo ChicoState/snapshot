@@ -4,6 +4,8 @@ import ocr
 import os
 from PIL import Image, ImageTk
 
+#test
+
 class SnippingTool:
     def __init__(self):
         self.screenshot = pyautogui.screenshot()
