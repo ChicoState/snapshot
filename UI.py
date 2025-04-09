@@ -2,8 +2,11 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
-from PIL import ImageGrab
-import io
+#from PIL import Image
+from io import BytesIO 
+from screenshot import take_screenshot
+
+
 
 class UI(QWidget):
     def __init__(self):
@@ -16,7 +19,7 @@ class UI(QWidget):
 
         # button to take screenshot
         self.capture_button = QPushButton("Take Screenshot")
-        self.capture_button.clicked.connect(self.take_screenshot)
+        self.capture_button.clicked.connect(self.sreenshot_text) #connects the screenshot tool to the botton on the screen 
         self.layout.addWidget(self.capture_button)
 
         #iImage preview label
@@ -26,23 +29,23 @@ class UI(QWidget):
 
         self.setLayout(self.layout)
 
-    def take_screenshot(self):
-        # Take a screenshot using PIL
-        screenshot = ImageGrab.grab()
+    def sreenshot_text(self):
+         # Call the function to take a screenshot
+        cropped_image = take_screenshot()
 
-        # Save to bytes and convert to QPixmap
-        buffer = io.BytesIO()
-        screenshot.save(buffer, format="PNG")
-        buffer.seek(0)
+        if cropped_image:
+            # Convert PIL Image to QPixmap
+            buffer = BytesIO()
+            cropped_image.save(buffer, format="PNG")
+            buffer.seek(0)
 
-        qt_image = QImage()
-        qt_image.loadFromData(buffer.read())
-        pixmap = QPixmap.fromImage(qt_image)
+            pixmap = QPixmap()
+            pixmap.loadFromData(buffer.getvalue(), "PNG")
 
-        # Show in label
-        self.image_label.setPixmap(pixmap.scaled(
-            self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
-        ))
+            self.image_label.setPixmap(pixmap)
+        else:
+            self.image_label.setText("No image captured.")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
