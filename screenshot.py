@@ -59,7 +59,6 @@ class SnippingTool:
         top = min(self.start_y, end_y)
         right = max(self.start_x, end_x)
         bottom = max(self.start_y, end_y)
-
         self.cropped_image = self.screenshot.crop((left, top, right, bottom))  # Crop image
 
     def get_cropped_image(self):
@@ -98,4 +97,3 @@ def extract_text_from_image(cropped_image):
 
 #basically hearing for the key - and then calling the snipping 
 
-#####
