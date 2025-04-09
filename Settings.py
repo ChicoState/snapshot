@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QGroupBox, QPushButton, QLabel, QRadioButton, QCheckBox
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, QLabel, QRadioButton, QCheckBox, QDialog, QFileDialog, QLineEdit
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt, QSettings
 from PIL import ImageGrab
@@ -116,6 +116,25 @@ class Settings(QWidget):
         # Add text destination settings group box to main settings window
         self.main_layout.addWidget(self.text_destination_group_box)
 
+        # File Name Group Box
+        self.file_path_group_box = QGroupBox("File Name Settings: ")
+        self.file_browse_button = QPushButton("Browse")
+
+        # Format file name group box layout
+        self.file_path_layout = QHBoxLayout()
+        self.file_path_layout.addWidget(QLabel("Text Destination File Name: "))
+        self.file_path_input = QLineEdit()
+        self.file_path_input.setReadOnly(True)
+        self.file_path_layout.addWidget(self.file_path_input)
+        self.file_path_layout.addWidget(self.file_browse_button)
+        self.file_path_group_box.setLayout(self.file_path_layout)
+
+        # Add file name group box to main settings window
+        self.main_layout.addWidget(self.file_path_group_box)
+        
+        # When Browse button is clicked, go to choose_file function
+        self.file_browse_button.clicked.connect(self.choose_destination_file)
+
         # Button to save changed settings
         self.apply_button = QPushButton("Apply Settings")
         self.apply_button.clicked.connect(self.apply_settings)
@@ -162,6 +181,9 @@ class Settings(QWidget):
         self.text_destination_button2.setChecked("Save Text to New File" in text_destination)
         self.text_destination_button3.setChecked("Save Text to Old File" in text_destination)
 
+        # Text Destination File Name (Default is currently empty)
+        self.file_path = self.settings.value("text_destination", "")
+        self.file_path_input.setText(self.file_path)
 
     # When you click apply settings button:
     def apply_settings(self):
@@ -217,9 +239,15 @@ class Settings(QWidget):
         if self.text_destination_button3.isChecked():
             print("Text Destination: Save to old file")
 
-    # End menu code
+        # Text Destination file name
+        self.settings.setValue("text_destination", self.file_path_input.text())
 
-
+    def choose_destination_file(self):
+        self.file_name, _ = QFileDialog.getSaveFileName(
+            self, "Select Output File", "", "Text File"
+        )
+        if self.file_name:
+            self.file_path_input.setText(self.file_name)
 
 
 
