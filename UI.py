@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 #from PIL import Image
 from io import BytesIO 
-from screenshot import take_screenshot
+from screenshot import take_screenshot, process_ocr
 
 
 
@@ -41,8 +41,11 @@ class UI(QWidget):
 
             pixmap = QPixmap()
             pixmap.loadFromData(buffer.getvalue(), "PNG")
-
             self.image_label.setPixmap(pixmap)
+
+            #calling the process ocr to take the screen and save it
+            # you can also pass a custom path to the process_ocr to save it in a custom location  
+            process_ocr(cropped_image= cropped_image) #converts to texts and saves
         else:
             self.image_label.setText("No image captured.")
 

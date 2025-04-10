@@ -5,6 +5,11 @@ import os
 from PIL import Image, ImageTk
 from pathlib import Path
 import pytesseract
+from io import BytesIO
+#import easyocr
+
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Correct path
+
  
 """
 the snipping tool takes the screenshot and is able to return it somewhere by calling the function get cropped image 
@@ -60,7 +65,7 @@ class SnippingTool:
         right = max(self.start_x, end_x)
         bottom = max(self.start_y, end_y)
 
-        self.cropped_image = self.screenshot.crop((left, top, right, bottom))  # Crop image
+        self.cropped_image = self.screenshot.crop((left, top, right, bottom))  # PIL.image formate
 
     def get_cropped_image(self):
         """Return the cropped image."""
@@ -71,31 +76,65 @@ def take_screenshot():
     # Initialize SnippingTool and capture cropped image
     #wait for the key 
     snip_tool = SnippingTool()
-    cropped_image = snip_tool.get_cropped_image()
+    cropped_image = snip_tool.get_cropped_image()  #return the image in PIL.image formate
     
     if cropped_image:
         # Extract text using Tesseract OCR
         return cropped_image
 
 
-def extract_text_from_image(cropped_image):
+
+# def extract_text_from_image(cropped_image):
+#     """
+#     Perform OCR on the given cropped image and return the extracted text. 
+#     :param cropped_image: The cropped PIL image to process.
+#     :return: Extracted text from the image.
+#     """
+#     try:
+#         # Perform OCR to extract text from the image
+#         #extracted_text = pytesseract.image_to_string(cropped_image)
+#         extracted_text = ocr.extract_text(cropped_image)  # Assuming ocr.extract_text_from_image handles PIL.Image
+#         return extracted_text
+#     except Exception as e:
+#         print(f"Error processing OCR: {e}")
+#         return None
+
+def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
     """
-    Perform OCR on the given cropped image and return the extracted text. 
-    :param cropped_image: The cropped PIL image to process.
-    :return: Extracted text from the image.
+    Extracts text from the image or image path, saves to a text file, and opens it.
+    :param cropped_image: The cropped PIL image to process (optional).
+    :param image_path: The image path to process (optional).
     """
     try:
-        # Perform OCR to extract text from the image
-        extracted_text = ocr.extract_text_from_image(cropped_image)  # Assuming ocr.extract_text_from_image handles PIL.Image
-       
-        #extracted_text = pytesseract.image_to_string(cropped_image)
-        
-        # Return the extracted text
-        return extracted_text
+
+        if cropped_image:
+            # img_stream = BytesIO()
+            # cropped_image.save(img_stream, format="PNG")
+            # img_stream.seek(0)  # Rewind to the beginning of the stream
+            # # Extract text from the image using the helper function
+            # extracted_text = ocr.extract_text(cropped_image)  #this has a problem 
+            # #extracted_text = "test test"
+            extracted_text = pytesseract.image_to_string(cropped_image)
+            if extracted_text:  # Check if OCR extraction was successful
+                # Save the extracted text to a text file
+                with open(save_path, "w", encoding="utf-8") as file:
+                    file.write(extracted_text)
+
+                print(f"Extracted text saved to {save_path}")
+
+                # Open the text file automatically
+                if os.name == "nt":  # Windows
+                    os.startfile(save_path)
+                elif os.name == "posix":  # macOS/Linux
+                    os.system(f"xdg-open {text_file}")  # Linux
+                    os.system(f"open {text_file}")  # macOS
+            else:
+                print("No text extracted from the image.")
+        else:
+            print("No valid image provided.")
+
     except Exception as e:
         print(f"Error processing OCR: {e}")
-        return None
 
-#basically hearing for the key - and then calling the snipping 
 
 #####
