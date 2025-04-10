@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 from pathlib import Path
 import pytesseract
 from io import BytesIO
-#import easyocr
+
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Correct path
 
@@ -64,7 +64,6 @@ class SnippingTool:
         top = min(self.start_y, end_y)
         right = max(self.start_x, end_x)
         bottom = max(self.start_y, end_y)
-
         self.cropped_image = self.screenshot.crop((left, top, right, bottom))  # PIL.image formate
 
     def get_cropped_image(self):
@@ -82,23 +81,6 @@ def take_screenshot():
         # Extract text using Tesseract OCR
         return cropped_image
 
-
-
-# def extract_text_from_image(cropped_image):
-#     """
-#     Perform OCR on the given cropped image and return the extracted text. 
-#     :param cropped_image: The cropped PIL image to process.
-#     :return: Extracted text from the image.
-#     """
-#     try:
-#         # Perform OCR to extract text from the image
-#         #extracted_text = pytesseract.image_to_string(cropped_image)
-#         extracted_text = ocr.extract_text(cropped_image)  # Assuming ocr.extract_text_from_image handles PIL.Image
-#         return extracted_text
-#     except Exception as e:
-#         print(f"Error processing OCR: {e}")
-#         return None
-
 def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
     """
     Extracts text from the image or image path, saves to a text file, and opens it.
@@ -108,12 +90,7 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
     try:
 
         if cropped_image:
-            # img_stream = BytesIO()
-            # cropped_image.save(img_stream, format="PNG")
-            # img_stream.seek(0)  # Rewind to the beginning of the stream
-            # # Extract text from the image using the helper function
-            # extracted_text = ocr.extract_text(cropped_image)  #this has a problem 
-            # #extracted_text = "test test"
+
             extracted_text = pytesseract.image_to_string(cropped_image)
             if extracted_text:  # Check if OCR extraction was successful
                 # Save the extracted text to a text file
@@ -137,4 +114,3 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
         print(f"Error processing OCR: {e}")
 
 
-#####
