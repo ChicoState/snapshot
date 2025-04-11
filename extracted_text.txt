@@ -1,0 +1,4 @@
+ct> cd .\snapshot\
+ct\snapshot> ls
+
+ect\snapshot

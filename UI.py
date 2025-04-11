@@ -2,9 +2,11 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, QLabel, QRadioButton, QCheckBox, QDialog, QFileDialog, QLineEdit
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt, QSettings
-from PIL import ImageGrab
-import io
+#from PIL import Image
+from io import BytesIO 
 import json
+from screenshot import take_screenshot, process_ocr
+
 
 class UI(QWidget):
     def __init__(self):
@@ -17,7 +19,8 @@ class UI(QWidget):
 
         # button to take screenshot
         self.capture_button = QPushButton("Take Screenshot")
-        self.capture_button.clicked.connect(self.take_screenshot)
+
+        self.capture_button.clicked.connect(self.sreenshot_text) #connects the screenshot tool to the botton on the screen 
         self.layout.addWidget(self.capture_button)
 
         # Start of Settings code
@@ -29,31 +32,12 @@ class UI(QWidget):
         # End of Settings code
 
         # Image preview label
+
         self.image_label = QLabel("Screenshot will appear here.")
         self.image_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.image_label)
 
         self.setLayout(self.layout)
-
-    # Screenshot code
-    def take_screenshot(self):
-        # Take a screenshot using PIL
-        screenshot = ImageGrab.grab()
-
-        # Save to bytes and convert to QPixmap
-        buffer = io.BytesIO()
-        screenshot.save(buffer, format="PNG")
-        buffer.seek(0)
-
-        qt_image = QImage()
-        qt_image.loadFromData(buffer.read())
-        pixmap = QPixmap.fromImage(qt_image)
-
-        # Show in label
-        self.image_label.setPixmap(pixmap.scaled(
-            self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
-        ))
-    # End Screenshot Code
 
     # When Settings button is pressed:
     def open_settings(self):
@@ -249,6 +233,26 @@ class Settings(QWidget):
         if self.file_name:
             self.file_path_input.setText(self.file_name)
 
+    def sreenshot_text(self):
+         # Call the function to take a screenshot
+        cropped_image = take_screenshot()
+
+        if cropped_image:
+            # Convert PIL Image to QPixmap
+            buffer = BytesIO()
+            cropped_image.save(buffer, format="PNG")
+            buffer.seek(0)
+
+            pixmap = QPixmap()
+            pixmap.loadFromData(buffer.getvalue(), "PNG")
+            self.image_label.setPixmap(pixmap)
+
+            #calling the process ocr to take the screen and save it
+            # you can also pass a custom path to the process_ocr to save it in a custom location  
+            process_ocr(cropped_image= cropped_image) #converts to texts and saves
+        else:
+            self.image_label.setText("No image captured.")
+
 
 
 if __name__ == "__main__":
@@ -256,3 +260,4 @@ if __name__ == "__main__":
     window = UI()
     window.show()
     sys.exit(app.exec_())
+
