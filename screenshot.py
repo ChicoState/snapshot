@@ -9,6 +9,7 @@ import pytesseract
 from io import BytesIO
 import pyperclip
 from PyQt5.QtCore import QSettings
+from toast import show_clipboard_notification_windows, show_notification_windows
 
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Correct path
@@ -107,10 +108,17 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
                 settings = QSettings("Software Engineering Class", "Snapshot")
                 text_destination_json = settings.value("Text Destination: ", "[]") 
                 text_destination = json.loads(text_destination_json)
+                notification_settings = settings.value("Notification Settings: ", "Show Notifications")
 
                 if "Save Text to Clipboard" in text_destination:
                     pyperclip.copy(extracted_text)  # Copy text to clipboard
                     print("Extracted text copied to clipboard.")
+                
+                if notification_settings == "Show Notifications":
+                    if "Save Text to Clipboard" not in text_destination: # option to copy to clipboard in notification
+                        show_notification_windows(cropped_image, extracted_text)
+                    else:
+                        show_clipboard_notification_windows(cropped_image, extracted_text)
 
                 # Open the text file automatically
                 if os.name == "nt":  # Windows
