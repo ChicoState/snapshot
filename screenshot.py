@@ -3,6 +3,7 @@ import tkinter as tk
 import ocr
 import os
 import json
+import json
 from PIL import Image, ImageTk
 from pathlib import Path
 import pytesseract
@@ -32,6 +33,7 @@ class SnippingTool:
         self.tk_image = ImageTk.PhotoImage(self.screenshot)
         self.canvas.create_image(0, 0, anchor="nw", image=self.tk_image)
         self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.extracted_text = ""
         self.extracted_text = ""
 
         # Selection variables
