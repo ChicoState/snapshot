@@ -114,7 +114,7 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
                     pyperclip.copy(extracted_text)  # Copy text to clipboard
                     print("Extracted text copied to clipboard.")
                 
-                if notification_settings == "Show Notifications":
+                if notification_settings == "Show Notifications" and os.name == "nt": # feature only available on windows
                     if "Save Text to Clipboard" not in text_destination: # option to copy to clipboard in notification
                         show_notification_windows(cropped_image, extracted_text)
                     else:
