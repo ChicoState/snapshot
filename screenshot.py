@@ -100,17 +100,26 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
 
             extracted_text = pytesseract.image_to_string(cropped_image)
             if extracted_text:  # Check if OCR extraction was successful
-                # Save the extracted text to a text file
-                with open(save_path, "w", encoding="utf-8") as file:
-                    file.write(extracted_text)
-
-                print(f"Extracted text saved to {save_path}")
-
+                
                 # Check settings
                 settings = QSettings("Software Engineering Class", "Snapshot")
                 text_destination_json = settings.value("Text Destination: ", "[]") 
                 text_destination = json.loads(text_destination_json)
                 notification_settings = settings.value("Notification Settings: ", "Show Notifications")
+
+
+                # Save the extracted text to a text file
+                if "Save Text to New File" in text_destination:
+                    with open(save_path, "w", encoding="utf-8") as file:
+                        file.write(extracted_text)
+                elif "Save Text to Old File" in text_destination:
+                    with open(text_file, "a", encoding="utf-8") as file:
+                        file.write(extracted_text + "\n")
+                else:
+                    print("err screenshot.py ln:119")    # this shouldnt be reached ever                    
+
+                print(f"Extracted text saved to {save_path}")
+
 
                 if "Save Text to Clipboard" in text_destination:
                     pyperclip.copy(extracted_text)  # Copy text to clipboard
@@ -137,26 +146,6 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
         print(f"Error processing OCR: {e}")
 
 
-def cumulative_ocr(self, image_path): 
-        """Extracts text from the image, saves to a text file, and opens it.""" #this version keeps saving text to the same file
-        try:
-            extracted_text = ocr.extract_text(image_path)  # Call OCR function
-
-            text_file = "long_text.txt"
-            with open(text_file, "a", encoding="utf-8") as file:
-                file.write(extracted_text + "\n")
-
-            print(f"Extracted text saved to {text_file}")
-
-            # Open text file automatically
-            if os.name == "nt":  # Windows
-                os.startfile(text_file)
-            elif os.name == "posix":  # macOS/Linux
-                os.system(f"xdg-open {text_file}")  # Linux
-                os.system(f"open {text_file}")  # macOS
-        except Exception as e:
-            print(f"Error processing OCR: {e}")
-
 #clears content from cumulative ocr process
-def clear_cumulative(self):
-    open("long_text.txt", "w").close()
+def clear_cumulative(save_path="extracted_text.txt"):
+    open(save_path, "w").close()
