@@ -1,4 +1,12 @@
-ct> cd .\snapshot\
-ct\snapshot> ls
+® PS C:\Users\vlada\Documents\csci43@\snapshot-main (1)\snapshot-main> python UI.py
+Extracted text saved to extracted text.txt
+Extracted text copied to clipboard.
+(<ToastDismissalReason. TIMED_QUT: 2>,)
 
-ect\snapshot
+%.PS C:\Users\vada\Document's\csci43@\snapshot-main (1)\snapshot-main> python UI.py
+Notification: Show
+File Settings: Don't open file after Snapshot
+
+Text Destination: Save to old file
+No text extracted from the image.
+Extracted text saved to extracted_text.txt
