@@ -10,10 +10,13 @@ import pytesseract
 from io import BytesIO
 import pyperclip
 from PyQt5.QtCore import QSettings
-if os.name == "nt": from toast import show_clipboard_notification_windows, show_notification_windows
 
+if os.name == "nt": 
+    from toast import show_clipboard_notification_windows, show_notification_windows
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Correct path
+else :
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Correct path
 
  
 """
