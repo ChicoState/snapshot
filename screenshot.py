@@ -116,7 +116,7 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
                     with open(save_path, "w", encoding="utf-8") as file:
                         file.write(extracted_text)
                 elif "Save Text to Old File" in text_destination:
-                    with open(text_file, "a", encoding="utf-8") as file:
+                    with open(save_path, "a", encoding="utf-8") as file:
                         file.write(extracted_text + "\n")
                 else:
                     print("err screenshot.py ln:119")    # this shouldnt be reached ever                    
