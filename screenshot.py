@@ -3,12 +3,25 @@ import tkinter as tk
 import ocr
 import os
 from PIL import Image, ImageTk
+from pathlib import Path
+import pytesseract
+from io import BytesIO
+
+
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Correct path
+
+ 
+"""
+the snipping tool takes the screenshot and is able to return it somewhere by calling the function get cropped image 
+
+"""
 
 class SnippingTool:
     def __init__(self):
-        self.screenshot = pyautogui.screenshot()
+        """Initializes the snipping tool, takes a screenshot, and sets up the Tkinter window."""
+        self.screenshot = pyautogui.screenshot()  # Take the initial screenshot
         
-        self.root = tk.Tk()  # Initialize Tkinter window
+        self.root = tk.Tk()  # Initialize Tkinter window , this is just used for the screenshot 
         self.root.attributes("-fullscreen", True)  # Fullscreen mode
 
         self.canvas = tk.Canvas(self.root, cursor="cross")  # Cross cursor for selection
@@ -29,7 +42,7 @@ class SnippingTool:
         self.root.mainloop()  # Keep window open until finished
 
     def on_press(self, event):
-        """Start selection rectangle."""
+        """Start the selection rectangle."""
         self.start_x, self.start_y = event.x, event.y
         if self.rect:
             self.canvas.delete(self.rect)
@@ -38,11 +51,11 @@ class SnippingTool:
         )
 
     def on_drag(self, event):
-        """Update selection rectangle."""
+        """Update the selection rectangle as the mouse moves."""
         self.canvas.coords(self.rect, self.start_x, self.start_y, event.x, event.y)
 
     def on_release(self, event):
-        """Capture the cropped selection, save it, and run OCR."""
+        """Capture the cropped selection and close the Tkinter window."""
         end_x, end_y = event.x, event.y
         self.root.destroy()  # Close Tkinter window
 
@@ -51,33 +64,58 @@ class SnippingTool:
         top = min(self.start_y, end_y)
         right = max(self.start_x, end_x)
         bottom = max(self.start_y, end_y)
+        self.cropped_image = self.screenshot.crop((left, top, right, bottom))  # PIL.image formate
 
-        cropped_image = self.screenshot.crop((left, top, right, bottom))  # Crop image
-        image_path = "screenshot.png"
-        cropped_image.save(image_path)  # Save image
-        print(f"Saved image as '{image_path}'")
+    def get_cropped_image(self):
+        """Return the cropped image."""
+        return self.cropped_image
 
-        # **Now calling OCR processing**
-        self.process_ocr(image_path)
 
-    def process_ocr(self, image_path):
-        """Extracts text from the image, saves to a text file, and opens it."""
-        try:
-            extracted_text = ocr.extract_text(image_path)  # Call OCR function
+def take_screenshot():
+    # Initialize SnippingTool and capture cropped image
+    # wait for the key 
+    snip_tool = SnippingTool()
+    cropped_image = snip_tool.get_cropped_image()  #return the image in PIL.image formate
+    
+    if cropped_image:
+        # Extract text using Tesseract OCR
+        return cropped_image
+    
 
-            text_file = "extracted_text.txt"
-            with open(text_file, "w", encoding="utf-8") as file:
-                file.write(extracted_text)
+def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
+    """
+    Extracts text from the image or image path, saves to a text file, and opens it.
+    :param cropped_image: The cropped PIL image to process (optional).
+    :param image_path: The image path to process (optional).
+    """
+    try:
 
-            print(f"Extracted text saved to {text_file}")
+        if cropped_image:
 
-            # Open text file automatically
-            if os.name == "nt":  # Windows
-                os.startfile(text_file)
-            elif os.name == "posix":  # macOS/Linux
-                os.system(f"xdg-open {text_file}")  # Linux
-                os.system(f"open {text_file}")  # macOS
-        except Exception as e:
-            print(f"Error processing OCR: {e}")
+            extracted_text = pytesseract.image_to_string(cropped_image)
+            if extracted_text:  # Check if OCR extraction was successful
+                # Save the extracted text to a text file
+                with open(save_path, "w", encoding="utf-8") as file:
+                    file.write(extracted_text)
 
-SnippingTool()  # Run snipping tool
+                print(f"Extracted text saved to {save_path}")
+
+                # Open the text file automatically
+                if os.name == "nt":  # Windows
+                    os.startfile(save_path)
+                elif os.name == "posix":  # macOS/Linux
+                    os.system(f"xdg-open {text_file}")  # Linux
+                    os.system(f"open {text_file}")  # macOS
+            else:
+                print("No text extracted from the image.")
+
+        # Here is where I need to put the option to use chosen file instead of cropped_image;
+        # Most likely have to save file to variable name, and invoke variable here?
+        # Don't know how if statement works when comparing file name; might have to just save chosen file to cropped_image and use it instead
+        # Don't use elif, move this into the above fun
+
+        else:
+            print("No valid image provided.")
+
+    except Exception as e:
+        print(f"Error processing OCR: {e}")
