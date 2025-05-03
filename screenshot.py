@@ -2,10 +2,16 @@ import pyautogui
 import tkinter as tk
 import ocr
 import os
+import json
+import json
 from PIL import Image, ImageTk
 from pathlib import Path
 import pytesseract
 from io import BytesIO
+import pyperclip
+from PyQt5.QtCore import QSettings
+from toast import show_clipboard_notification_windows, show_notification_windows
+
 
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Correct path
@@ -28,6 +34,8 @@ class SnippingTool:
         self.tk_image = ImageTk.PhotoImage(self.screenshot)
         self.canvas.create_image(0, 0, anchor="nw", image=self.tk_image)
         self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.extracted_text = ""
+        self.extracted_text = ""
 
         # Selection variables
         self.start_x = None
@@ -74,13 +82,14 @@ class SnippingTool:
 def take_screenshot():
     # Initialize SnippingTool and capture cropped image
     # wait for the key 
+
     snip_tool = SnippingTool()
     cropped_image = snip_tool.get_cropped_image()  #return the image in PIL.image formate
     
     if cropped_image:
         # Extract text using Tesseract OCR
         return cropped_image
-    
+
 
 def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
     """
@@ -100,6 +109,24 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
 
                 print(f"Extracted text saved to {save_path}")
 
+
+                # Check settings
+                settings = QSettings("Software Engineering Class", "Snapshot")
+                text_destination_json = settings.value("Text Destination: ", "[]") 
+                text_destination = json.loads(text_destination_json)
+                notification_settings = settings.value("Notification Settings: ", "Show Notifications")
+
+                if "Save Text to Clipboard" in text_destination:
+                    pyperclip.copy(extracted_text)  # Copy text to clipboard
+                    print("Extracted text copied to clipboard.")
+                
+                if notification_settings == "Show Notifications" and os.name == "nt": # feature only available on windows
+                    if "Save Text to Clipboard" not in text_destination: # option to copy to clipboard in notification
+                        show_notification_windows(cropped_image, extracted_text)
+                    else:
+                        show_clipboard_notification_windows(cropped_image, extracted_text)
+
+
                 # Open the text file automatically
                 if os.name == "nt":  # Windows
                     os.startfile(save_path)
@@ -109,13 +136,9 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
             else:
                 print("No text extracted from the image.")
 
-        # Here is where I need to put the option to use chosen file instead of cropped_image;
-        # Most likely have to save file to variable name, and invoke variable here?
-        # Don't know how if statement works when comparing file name; might have to just save chosen file to cropped_image and use it instead
-        # Don't use elif, move this into the above fun
-
         else:
             print("No valid image provided.")
 
     except Exception as e:
         print(f"Error processing OCR: {e}")
+
