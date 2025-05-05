@@ -10,10 +10,13 @@ import pytesseract
 from io import BytesIO
 import pyperclip
 from PyQt5.QtCore import QSettings
-from toast import show_clipboard_notification_windows, show_notification_windows
 
+if os.name == "nt": 
+    from toast import show_clipboard_notification_windows, show_notification_windows
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Correct path
+else :
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Correct path
 
  
 """
@@ -127,8 +130,8 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
                 if os.name == "nt":  # Windows
                     os.startfile(save_path)
                 elif os.name == "posix":  # macOS/Linux
-                    os.system(f"xdg-open {text_file}")  # Linux
-                    os.system(f"open {text_file}")  # macOS
+                    os.system(f"xdg-open {save_path}")  # Linux
+                    os.system(f"open {save_path}")  # macOS
             else:
                 print("No text extracted from the image.")
         else:
