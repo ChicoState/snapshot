@@ -18,6 +18,7 @@ else :
     pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
 
+
  
 """
 the snipping tool takes the screenshot and is able to return it somewhere by calling the function get cropped image 
@@ -83,13 +84,15 @@ class SnippingTool:
 
 def take_screenshot():
     # Initialize SnippingTool and capture cropped image
-    #wait for the key 
+    # wait for the key 
+
     snip_tool = SnippingTool()
     cropped_image = snip_tool.get_cropped_image()  #return the image in PIL.image formate
     
     if cropped_image:
         # Extract text using Tesseract OCR
         return cropped_image
+
 
 def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
     """
@@ -109,6 +112,7 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
 
                 print(f"Extracted text saved to {save_path}")
 
+
                 # Check settings
                 settings = QSettings("Software Engineering Class", "Snapshot")
                 text_destination_json = settings.value("Text Destination: ", "[]") 
@@ -125,6 +129,7 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
                     else:
                         show_clipboard_notification_windows(cropped_image, extracted_text)
 
+
                 # Open the text file automatically
                 if os.name == "nt":  # Windows
                     os.startfile(save_path)
@@ -133,10 +138,10 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
                     os.system(f"open {save_path}")  # macOS
             else:
                 print("No text extracted from the image.")
+
         else:
             print("No valid image provided.")
 
     except Exception as e:
         print(f"Error processing OCR: {e}")
-
 
