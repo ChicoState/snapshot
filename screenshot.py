@@ -28,6 +28,7 @@ class SnippingTool:
         
         self.root = tk.Tk()  # Initialize Tkinter window , this is just used for the screenshot 
         self.root.attributes("-fullscreen", True)  # Fullscreen mode
+        self.root.attributes("-topmost", True)
 
         self.canvas = tk.Canvas(self.root, cursor="cross")  # Cross cursor for selection
         self.tk_image = ImageTk.PhotoImage(self.screenshot)

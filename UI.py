@@ -7,6 +7,7 @@ from io import BytesIO
 import json
 from screenshot import take_screenshot, process_ocr
 import os
+from ahk import AHK
 
 class UI(QWidget):
     def __init__(self):
@@ -37,6 +38,14 @@ class UI(QWidget):
         self.options_button.clicked.connect(self.open_settings)
         self.layout.addWidget(self.options_button)
         # End of Settings code
+        
+        # Start of Keybindings code
+        # Button to access settings connects to the self.open_settings when it is pressed
+        self.keybinds_button = QPushButton("Keybindings")
+        self.keybinds_button.clicked.connect(self.open_keybinds)
+        self.layout.addWidget(self.keybinds_button)
+        # End of Keybindings code
+        
         # Image preview label
         self.image_label = QLabel("Screenshot will appear here.")
         self.image_label.setAlignment(Qt.AlignCenter)
@@ -48,6 +57,11 @@ class UI(QWidget):
     def open_settings(self):
         self.open_settings = Settings(self)
         self.open_settings.show()
+    
+	# When Keybindings button is pressed:
+    def open_keybinds(self):
+        self.open_keybinds = Keybindings(self)
+        self.open_keybinds.show()
 
     def screenshot_text(self):
          # Call the function to take a screenshot
@@ -85,7 +99,7 @@ class UI(QWidget):
             process_ocr(cropped_image= cropped_image, save_path= self.file_path) #converts to texts and saves to the specified location
             os.startfile(self.file_path)
         else:
-            self.image_label.setText("No image captured.")
+            self.image_label.setText("No image captured.")			
         
 # Settings Window:        
 class Settings(QWidget):
@@ -285,11 +299,41 @@ class Settings(QWidget):
             self.file_path_input.setText(self.file_name) #this basically just displays the image to the text field 
             self.settings.setValue("text_destination", self.file_name)
             self.UI_window.file_path = self.file_name # should update the UI file path 
-        print(self.file_name)  
+        print(self.file_name)
+
+# Keybindings Window:        
+class Keybindings(QWidget):
+    def __init__(self, UI_window):
+        super().__init__() #initalizing the parent class constructor
+        
+    	# Window name, size, and layout. Also indicates this is a settings window, which means changes should persist
+        self.setWindowTitle("Keybindings") # window title
+        self.settings = QSettings("Software Engineering Class", "Snapshot")
+        self.setGeometry(100, 100, 800, 600)
+        self.main_layout = QVBoxLayout() #this is just the layout of the window
+        self.UI_window = UI_window
+        
+        self.main_layout.addWidget(QLabel("Take Snapshot: Ctrl+Shift+S	|	Quit Program: Ctrl+Q")) #adding a text widget to the layout
+        self.main_layout.setAlignment(Qt.AlignCenter)
+        self.setLayout(self.main_layout)
+
+def take_snapshot():
+    print('Taking snapshot')
+    window.screenshot_text()
+    
+def quit_key():
+    print('Quitting.')
+    app.exit()
+   
+ahk = AHK()
+
+ahk.add_hotkey('^+s', callback=take_snapshot)
+ahk.add_hotkey('^q', callback=quit_key)
+ahk.start_hotkeys()  # start the hotkey process thread
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = UI()
     window.show()
-    sys.exit(app.exec_())
+    app.exec()
 
