@@ -2,12 +2,14 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGroupBox, QPushButton, QLabel, QRadioButton, QCheckBox, QDialog, QFileDialog, QLineEdit
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt, QSettings
-#from PIL import Image
+from PIL import Image
 from io import BytesIO 
+from pdf2image import convert_from_path
 import json
 from screenshot import take_screenshot, process_ocr
 import os
 from ahk import AHK
+
 
 class UI(QWidget):
     def __init__(self):
@@ -20,6 +22,8 @@ class UI(QWidget):
         self.settings = QSettings("Software Engineering Class", "Snapshot")
         # button to take screenshot calles the self.screenshot_text function which takes the screenshot 
         self.capture_button = QPushButton("Take Screenshot")
+        self.capture_button.clicked.connect(self.screenshot_text) #connects the screenshot tool to the botton on the screen 
+        self.layout.addWidget(self.capture_button)
         
         self.default_filename = "extracted_text.txt"
         saved_path = self.settings.value("text_destination", "")
@@ -28,12 +32,17 @@ class UI(QWidget):
         else:
             self.file_path = os.path.join(os.path.expanduser("~"), "Documents", self.default_filename)
 
+    
+        # Upload file code:
+        # Goal is to be able to click button to choose file to give to ocr
+        self.file_select_button = QPushButton("Select File")
+        self.file_select_button.clicked.connect(self.file_select)
+        self.layout.addWidget(self.file_select_button)
+        # End of upload file code 
         
-        self.capture_button.clicked.connect(self.screenshot_text) #connects the screenshot tool to the botton on the screen 
-        self.layout.addWidget(self.capture_button)
-
         # Start of Settings code
         # Button to access settings connects to the self.open_settings when it is pressed
+
         self.options_button = QPushButton("Settings")
         self.options_button.clicked.connect(self.open_settings)
         self.layout.addWidget(self.options_button)
@@ -51,6 +60,7 @@ class UI(QWidget):
         self.image_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.image_label)
 
+        # Set final layout
         self.setLayout(self.layout)
 
     # When Settings button is pressed:
@@ -63,21 +73,88 @@ class UI(QWidget):
         self.open_keybinds = Keybindings(self)
         self.open_keybinds.show()
 
+    # Convert PIL Image to QPixmap
+    def convert_to_QPixmap (self, pic_to_convert):
+        buffer = BytesIO()
+        pic_to_convert.save(buffer, format="PNG")
+        buffer.seek(0)
+
+        pixmap = QPixmap()
+        pixmap.loadFromData(buffer.getvalue(), "PNG")
+        self.image_label.setPixmap(pixmap)
+
+        # Calling the process ocr to take the image and save it
+        # You can also pass a custom path to the process_ocr to save it in a custom location
+        return process_ocr (pic_to_convert, save_path = self.file_path)
+
+
+    # Function to convert pdf to image for OCR
+    def convert_pdf (self, file_info):
+        # We initialize extracted_text as an empty string here so it can be filled with concatenated pdf page text
+        extracted_text = ""
+        # Converting from pdf process; first parameter is file to be converted, second is the DPI value
+        # NOTE: The larger the dpi, the more accurate the OCR is, but the window scales up larger as well
+        # 100 is the minimum dpi value I've found to consistently have few errors but still fits on the screen
+        pages = convert_from_path(file_info, dpi = 100)
+        
+        # For each page in the pdf file, extract text then concatenate to the extracted_text string to be held
+        for i, page_image in enumerate(pages):
+            page_text = self.convert_to_QPixmap (page_image)
+
+            # Send current page_image to the OCR, then concatenate the results onto the previous results.
+            # The "\n\n" indicates a page break with a double newline; can be removed if we want it to be seamless
+            # page_text = process_ocr (page_image)
+            # In the case page_text returns no text from OCR, "(page_text or "")" makes sure we're always trying to concatenate a string onto a string which prevents errors
+            extracted_text += (page_text or "") + "\n\n"
+
+# CURRENT PROJECT: HAVE TO CHANGE SETTINGS TO CONCATENATE FILE FOR HERE, MAY MEAN I NEED TO PUSH WHAT I'VE GOT TO GIT AND GET TYLER'S NEW BRANCH
+
+        # Return the fully concatenated text
+        return extracted_text
+
+
+    # Function to transfer chosen image to OCR for text extraction
+    def file_select(self):
+        # Call the function to choose a library file
+        # getOpenFileName takes the arguments of:
+        # self - The parent function
+        # "Select File" - The caption to be shown
+        # "/Documents" - The starting directory
+        # "Images (*.png *.jpg *.pdf)" - The filter, only show these types of files
+        # This function returns a tuple with 2 values, have to separate out the file name with , _ holding the part of the tuple we don't need
+        file_info, _ = QFileDialog.getOpenFileName(self, "Select File", "/Documents", "Images (*.png *.jpg *.bmp *.pdf)")
+
+        # If successful:
+        if file_info:
+            # If file is pdf, we've got to change it to a simpler image format
+            # Check if file is a pdf:
+            if file_info.lower().endswith('.pdf'):
+                # If file is a pdf, call convert_pdf function
+                selected_file = self.convert_pdf(file_info)
+                
+            else:
+                # If not a pdf, do the standard work instead
+                selected_file = Image.open (file_info)
+                self.convert_to_QPixmap (selected_file)
+                # selected_file = self.convert_to_QPixmap (selected_file)
+                # calling the process ocr to take the screen and save it
+                # you can also pass a custom path to the process_ocr to save it in a custom location  
+                # process_ocr(selected_file) #converts to texts and saves
+                
+            os.startfile(self.file_path) 
+        else:
+            self.image_label.setText("Error loading chosen file")
+
     def screenshot_text(self):
          # Call the function to take a screenshot
         cropped_image = take_screenshot()
 
         if cropped_image:
-            # Convert PIL Image to QPixmap
-            #
             if not self.file_path:
-                
-
                 file_name, _ = QFileDialog.getSaveFileName(
                     self, 
                     "Select File Destination", self.default_filename, 
-                    "Text Files (*.txt)"
-                )
+                    "Text Files (*.txt)")
                 if file_name:
                     self.file_path = file_name
                     self.settings.setValue("text_destination", self.file_path)
@@ -85,22 +162,16 @@ class UI(QWidget):
                     # If user cancels, don't proceed
                     self.image_label.setText("No save location selected.")
                     return
-            #
-            buffer = BytesIO()
-            cropped_image.save(buffer, format="PNG")
-            buffer.seek(0)
-
-            pixmap = QPixmap()
-            pixmap.loadFromData(buffer.getvalue(), "PNG")
-            self.image_label.setPixmap(pixmap)
-
-            #calling the process ocr to take the screen and save it
-            # you can also pass a custom path to the process_ocr to save it in a custom location  
-            process_ocr(cropped_image= cropped_image, save_path= self.file_path) #converts to texts and saves to the specified location
+                  
+            # Convert PIL Image to QPixmap      
+            self.convert_to_QPixmap (cropped_image)
             os.startfile(self.file_path)
+
         else:
-            self.image_label.setText("No image captured.")			
-        
+
+            self.image_label.setText("No image captured.")
+            
+    
 # Settings Window:        
 class Settings(QWidget):
     def __init__(self, UI_window):
@@ -330,6 +401,7 @@ ahk = AHK()
 ahk.add_hotkey('^+s', callback=take_snapshot)
 ahk.add_hotkey('^q', callback=quit_key)
 ahk.start_hotkeys()  # start the hotkey process thread
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
