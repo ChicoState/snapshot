@@ -31,6 +31,7 @@ class SnippingTool:
         
         self.root = tk.Tk()  # Initialize Tkinter window , this is just used for the screenshot 
         self.root.attributes("-fullscreen", True)  # Fullscreen mode
+        self.root.attributes("-topmost", True) # Move snipping tool window to the front
 
         self.canvas = tk.Canvas(self.root, cursor="cross")  # Cross cursor for selection
         self.tk_image = ImageTk.PhotoImage(self.screenshot)
@@ -105,13 +106,6 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
 
             extracted_text = pytesseract.image_to_string(cropped_image)
             if extracted_text:  # Check if OCR extraction was successful
-                ## HAD TO COMMENT OUT THIS SECTION; TYLER'S SECTION REPLACES IT
-                # Save the extracted text to a text file
-                # with open(save_path, "w", encoding="utf-8") as file:
-                    # file.write(extracted_text)
-
-                # print(f"Extracted text saved to {save_path}")
-
 
                 # Check settings
                 settings = QSettings("Software Engineering Class", "Snapshot")
@@ -157,5 +151,7 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
     except Exception as e:
         print(f"Error processing OCR: {e}")
 
+
+#clears content from cumulative ocr process
 def clear_cumulative(save_path="extracted_text.txt"):
     open(save_path, "w").close()
