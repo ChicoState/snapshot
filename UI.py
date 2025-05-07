@@ -345,27 +345,27 @@ class Settings(QWidget):
         self.settings.setValue("Text Destination: ", json.dumps(text_destination))
 
         # Placeholder code to show what you've applied:
-        print("Settings applied: ")
+        # print("Settings applied: ")
 
         # Notification settings
-        if self.notification_button1.isChecked():
-            print("Notification: Show")
-        else:
-            print("Notification: Don't show")
+        # if self.notification_button1.isChecked():
+            # print("Notification: Show")
+        # else:
+            # print("Notification: Don't show")
 
         # File settings
-        if self.open_file_button1.isChecked():
-            print("File Settings: Open file after Snapshot")
-        else:
-            print("File Settings: Don't open file after Snapshot")
+        # if self.open_file_button1.isChecked():
+            # print("File Settings: Open file after Snapshot")
+        # else:
+            # print("File Settings: Don't open file after Snapshot")
 
         # Text destination settings
-        if self.text_destination_button1.isChecked():
-            print("Text Destination: Save to clipboard")
-        if self.text_destination_button2.isChecked():
-            print("Text Destination: Save to new file")
-        if self.text_destination_button3.isChecked():
-            print("Text Destination: Save to old file")
+        # if self.text_destination_button1.isChecked():
+            # print("Text Destination: Save to clipboard")
+        # if self.text_destination_button2.isChecked():
+            # print("Text Destination: Save to new file")
+        # if self.text_destination_button3.isChecked():
+            # print("Text Destination: Save to old file")
 
         # Text Destination file name
         self.settings.setValue("text_destination", self.file_path_input.text())
