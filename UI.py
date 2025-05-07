@@ -11,6 +11,14 @@ import os
 from ahk import AHK
 
 
+from ahk import AHK
+import os
+
+ahk_path = os.path.join(os.path.dirname(__file__), 'AutoHotkey.exe')
+ahk = AHK(executable_path=ahk_path)
+
+
+
 class UI(QWidget):
     def __init__(self):
         super().__init__() #initalixing the parent class constructor 

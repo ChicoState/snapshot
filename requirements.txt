@@ -1,0 +1,9 @@
+ahk[binary]==1.8.4
+pdf2image==1.17.0
+Pillow==11.2.1
+pyautogui==0.9.54
+pyperclip==1.9.0
+PyQt5==5.15.11
+PyQt5_sip==12.17.0
+pytesseract==0.3.13
+win11toast==0.35
