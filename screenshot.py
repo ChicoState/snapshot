@@ -3,7 +3,6 @@ import tkinter as tk
 import ocr
 import os
 import json
-import json
 from PIL import Image, ImageTk
 from pathlib import Path
 import pytesseract
@@ -107,13 +106,12 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
 
             extracted_text = pytesseract.image_to_string(cropped_image)
             if extracted_text:  # Check if OCR extraction was successful
-                
+
                 # Check settings
                 settings = QSettings("Software Engineering Class", "Snapshot")
                 text_destination_json = settings.value("Text Destination: ", "[]") 
                 text_destination = json.loads(text_destination_json)
                 notification_settings = settings.value("Notification Settings: ", "Show Notifications")
-
 
                 # Save the extracted text to a text file
                 if "Save Text to New File" in text_destination:
@@ -126,7 +124,6 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
                     print("err screenshot.py ln:119")    # this shouldnt be reached ever                    
 
                 print(f"Extracted text saved to {save_path}")
-
 
                 if "Save Text to Clipboard" in text_destination:
                     pyperclip.copy(extracted_text)  # Copy text to clipboard
@@ -153,6 +150,7 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
 
     except Exception as e:
         print(f"Error processing OCR: {e}")
+
 
 #clears content from cumulative ocr process
 def clear_cumulative(save_path="extracted_text.txt"):

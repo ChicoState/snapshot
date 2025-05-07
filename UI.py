@@ -96,18 +96,33 @@ class UI(QWidget):
         # NOTE: The larger the dpi, the more accurate the OCR is, but the window scales up larger as well
         # 100 is the minimum dpi value I've found to consistently have few errors but still fits on the screen
         pages = convert_from_path(file_info, dpi = 100)
+
+        # Check settings to see if we're already supposed to be concatenating file; if not, make it so setting changes for this then change back
+        settings = QSettings ("Software Engineering Class", "Snapshot")
+        text_destination_json = settings.value ("Text Destination: ", "[]")
+        text_destination = json.loads (text_destination_json)
+        # Flag that monitors if we've changed save settings
+        change_flag = False
+
+        # If concatenation setting is not enabled
+        if "Save Text to Old File" not in text_destination:
+            # Set flag to show we have to change these settings back afterwards
+            change_flag = True
+            # Change setting here, then save
+            text_destination.append ("Save Text to Old File")
+            settings.setValue ("Text Destination", json.dumps(text_destination))
+
         
         # For each page in the pdf file, extract text then concatenate to the extracted_text string to be held
         for i, page_image in enumerate(pages):
-            page_text = self.convert_to_QPixmap (page_image)
+            self.convert_to_QPixmap (page_image)
 
-            # Send current page_image to the OCR, then concatenate the results onto the previous results.
-            # The "\n\n" indicates a page break with a double newline; can be removed if we want it to be seamless
-            # page_text = process_ocr (page_image)
-            # In the case page_text returns no text from OCR, "(page_text or "")" makes sure we're always trying to concatenate a string onto a string which prevents errors
-            extracted_text += (page_text or "") + "\n\n"
-
-# CURRENT PROJECT: HAVE TO CHANGE SETTINGS TO CONCATENATE FILE FOR HERE, MAY MEAN I NEED TO PUSH WHAT I'VE GOT TO GIT AND GET TYLER'S NEW BRANCH
+        # If flag has been tripped, we have to change settings back; since they're checkboxes, we only have to remove the box we checked
+        if change_flag:
+            # Reset settings here
+            text_destination.remove ("Save Text to Old File")
+            settings.setValue ("Text Destination", json.dumps (text_destination))
+            change_flag = False
 
         # Return the fully concatenated text
         return extracted_text
@@ -130,16 +145,15 @@ class UI(QWidget):
             # Check if file is a pdf:
             if file_info.lower().endswith('.pdf'):
                 # If file is a pdf, call convert_pdf function
-                selected_file = self.convert_pdf(file_info)
+                self.convert_pdf(file_info)
                 
             else:
                 # If not a pdf, do the standard work instead
                 selected_file = Image.open (file_info)
                 self.convert_to_QPixmap (selected_file)
-                # selected_file = self.convert_to_QPixmap (selected_file)
                 # calling the process ocr to take the screen and save it
                 # you can also pass a custom path to the process_ocr to save it in a custom location  
-                # process_ocr(selected_file) #converts to texts and saves
+                #converts to texts and saves
                 
             os.startfile(self.file_path) 
         else:
