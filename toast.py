@@ -24,7 +24,7 @@ def show_clipboard_notification_windows(cropped_image, extracted_text):
             {'activationType': 'protocol', 'arguments': 'http:2', 'content': 'View Image'}
         ]
 
-        toast('Text copied to clipboard', extracted_text, on_click=handle_click, buttons=buttons)
+        toast('Text extracted from image', extracted_text, on_click=handle_click, buttons=buttons)
     threading.Thread(target=notify, daemon=True).start()
 
 def show_notification_windows(cropped_image, extracted_text):
