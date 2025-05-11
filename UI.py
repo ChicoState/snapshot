@@ -162,8 +162,15 @@ class UI(QWidget):
                 # calling the process ocr to take the screen and save it
                 # you can also pass a custom path to the process_ocr to save it in a custom location  
                 #converts to texts and saves
-                
-            os.startfile(self.file_path) 
+            settings = QSettings("Software Engineering Class", "Snapshot")
+            open_notepad_settings = settings.value("File Settings: ", "Open Destination File")
+            if open_notepad_settings == "Open Destination File":
+                # Open the text file automatically
+                if os.name == "nt":  # Windows
+                    os.startfile(self.file_path)
+                elif os.name == "posix":  # macOS/Linux
+                    os.system(f"xdg-open {self.file_path}")  # Linux
+                    os.system(f"open {self.file_path}")  # macOS
         else:
             self.image_label.setText("Error loading chosen file")
 
@@ -187,7 +194,15 @@ class UI(QWidget):
                   
             # Convert PIL Image to QPixmap      
             self.convert_to_QPixmap (cropped_image)
-            os.startfile(self.file_path)
+            settings = QSettings("Software Engineering Class", "Snapshot")
+            open_notepad_settings = settings.value("File Settings: ", "Open Destination File")
+            if open_notepad_settings == "Open Destination File":
+                # Open the text file automatically
+                if os.name == "nt":  # Windows
+                    os.startfile(self.file_path)
+                elif os.name == "posix":  # macOS/Linux
+                    os.system(f"xdg-open {self.file_path}")  # Linux
+                    os.system(f"open {self.file_path}")  # macOS
 
         else:
 
