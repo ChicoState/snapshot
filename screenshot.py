@@ -135,13 +135,14 @@ def process_ocr(cropped_image=None, save_path="extracted_text.txt"):
                     else:
                         show_clipboard_notification_windows(cropped_image, extracted_text)
 
-
-                # Open the text file automatically
-                if os.name == "nt":  # Windows
-                    os.startfile(save_path)
-                elif os.name == "posix":  # macOS/Linux
-                    os.system(f"xdg-open {save_path}")  # Linux
-                    os.system(f"open {save_path}")  # macOS
+                open_notepad_settings = settings.value("File Settings: ", "Open Destination File")
+                if open_notepad_settings == "Open Destination File":
+                    # Open the text file automatically
+                    if os.name == "nt":  # Windows
+                        os.startfile(save_path)
+                    elif os.name == "posix":  # macOS/Linux
+                        os.system(f"xdg-open {save_path}")  # Linux
+                        os.system(f"open {save_path}")  # macOS
             else:
                 print("No text extracted from the image.")
 

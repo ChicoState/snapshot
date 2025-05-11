@@ -1,9 +1,11 @@
 import os
+import threading
 from win11toast import toast
 from PIL import Image, ImageTk
 import pyperclip
 
 def show_clipboard_notification_windows(cropped_image, extracted_text):
+    def notify():
         """Shows a toast notification with an option to open the text editor."""
         def handle_click(event):
             action = event.get('arguments', 'http:')[5:] #ignore 'http:' prefix; workaround for win11toast
@@ -22,9 +24,11 @@ def show_clipboard_notification_windows(cropped_image, extracted_text):
             {'activationType': 'protocol', 'arguments': 'http:2', 'content': 'View Image'}
         ]
 
-        toast('Text copied to clipboard', extracted_text, on_click=handle_click, buttons=buttons)
+        toast('Text extracted from image', extracted_text, on_click=handle_click, buttons=buttons)
+    threading.Thread(target=notify, daemon=True).start()
 
 def show_notification_windows(cropped_image, extracted_text):
+    def notify():
         """Shows a toast notification with an option to open the text editor."""
         def handle_click(event):
             action = event.get('arguments', 'http:')[5:] #ignore 'http:' prefix; workaround for win11toast
@@ -48,3 +52,4 @@ def show_notification_windows(cropped_image, extracted_text):
         ]
 
         toast('Text copied to clipboard', extracted_text, on_click=handle_click, buttons=buttons)
+    threading.Thread(target=notify, daemon=True).start()
